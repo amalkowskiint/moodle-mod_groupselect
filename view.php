@@ -170,9 +170,9 @@ if (! is_enrolled($context)) {
 
 // Group description edit.
 if ($groupid && (($canedit && isset($mygroups[$groupid])) || ($canmanagegroups)) && data_submitted()) {
-    $egroup = $DB->get_record_sql("SELECT *
-                                 FROM {groups} g
-                                WHERE g.id = ?", [$groupid]);
+    require_sesskey();
+    // Restrict to groups of this course.
+    $egroup = $DB->get_record('groups', ['id' => $groupid, 'courseid' => $course->id], '*', MUST_EXIST);
     if (strlen($newdescription) > create_form::DESCRIPTION_MAXLEN) {
         $newdescription = substr($newdescription, 0, create_form::DESCRIPTION_MAXLEN);
     }
@@ -965,6 +965,7 @@ if ($canedit || $canmanagegroups) {
         $(".editable_textarea").editable("' . $url . '", {
             id        : "groupid",
             name      : "newdescription",
+            submitdata: {sesskey: M.cfg.sesskey},
             type      : "textarea",
             height    : "90%",
             width     : "90%",
